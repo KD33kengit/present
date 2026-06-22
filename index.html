@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarah — Birthday Dossier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #e8e0d0;
+      font-family: 'Special Elite', serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #horror-app {
+      width: 100%;
+      max-width: 680px;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page {
+      display: none;
+      min-height: 100vh;
+      padding: 3rem 2rem 2rem;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .page.active { display: flex; }
+
+    /* ── Blood drip ── */
+    .blood-drip {
+      position: absolute; top: 0; left: 0; right: 0; height: 8px;
+      background: #8b0000;
+      border-radius: 0 0 50% 50% / 0 0 8px 8px;
+    }
+    .blood-drip::after {
+      content: '';
+      position: absolute;
+      top: 6px; left: 20%;
+      width: 6px; height: 18px;
+      background: #8b0000;
+      border-radius: 0 0 50% 50%;
+    }
+    .blood-drip::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 60%;
+      width: 5px; height: 14px;
+      background: #8b0000;
+      border-radius: 0 0 50% 50%;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 3px;
+      background: #8b0000;
+      transition: width 0.4s ease;
+      z-index: 100;
+    }
+
+    /* ── Page counter ── */
+    .page-counter {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      font-size: 11px; color: #333; letter-spacing: 2px;
+    }
+
+    /* ── Labels & titles ── */
+    .page-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #8b0000;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-title {
+      font-family: 'Creepster', cursive;
+      font-size: 46px;
+      color: #e8e0d0;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+      text-shadow: 2px 2px 0 #8b0000;
+    }
+
+    /* ── Cards ── */
+    .content-card {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Personality traits ── */
+    .trait-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    .trait-row:last-child { border-bottom: none; }
+    .trait-bullet {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #8b0000; margin-top: 8px; flex-shrink: 0;
+    }
+    .trait-text { font-size: 14px; color: #c8c0b0; line-height: 1.6; }
+
+    /* ── Skills ── */
+    .skill-card {
+      background: #0f0f0f;
+      border: 1px solid #1e1e1e;
+      border-left: 3px solid #8b0000;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .skill-card:last-child { margin-bottom: 0; }
+    .skill-name { font-size: 13px; color: #e8e0d0; font-weight: 500; margin-bottom: 3px; }
+    .skill-type { font-size: 11px; color: #8b0000; letter-spacing: 2px; margin-bottom: 6px; }
+    .skill-type.ultimate { color: #c0392b; }
+    .skill-desc { font-size: 13px; color: #888; line-height: 1.5; }
+    .skill-cooldown { font-size: 11px; color: #555; margin-top: 4px; }
+
+    /* ── Weaknesses ── */
+    .weakness-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #1a1a1a;
+    }
+    .weakness-item:last-child { border-bottom: none; }
+    .skull { font-size: 16px; }
+    .weakness-text { font-size: 14px; color: #c8c0b0; }
+
+    /* ── Field log ── */
+    .log-entry {
+      background: #0c0c0c;
+      border: 1px solid #1e1e1e;
+      border-radius: 4px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .log-entry:last-child { margin-bottom: 0; }
+    .log-day { font-size: 11px; color: #8b0000; letter-spacing: 3px; margin-bottom: 8px; }
+    .log-lines { font-size: 13px; color: #aaa; line-height: 1.8; }
+    .log-lines span { display: block; }
+
+    /* ── Lore ── */
+    .lore-text {
+      font-size: 16px; color: #c8c0b0; line-height: 2.2;
+      text-align: center; max-width: 460px;
+    }
+    .lore-text span { display: block; }
+    .final-reveal {
+      font-family: 'Creepster', cursive;
+      font-size: 28px;
+      color: #8b0000;
+      text-align: center;
+      margin-top: 1rem;
+      letter-spacing: 2px;
+    }
+
+    /* ── Cover stats ── */
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #1a1a1a;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 13px; color: #666; }
+    .stat-val { font-size: 13px; color: #e8e0d0; }
+
+    /* ── Birthday banner ── */
+    .birthday-banner {
+      background: #8b0000;
+      color: #e8e0d0;
+      font-size: 12px;
+      letter-spacing: 3px;
+      padding: 6px 20px;
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      display: inline-block;
+    }
+
+    /* ── Buttons ── */
+    .continue-btn {
+      background: #8b0000;
+      color: #e8e0d0;
+      border: none;
+      padding: 12px 32px;
+      font-family: 'Special Elite', serif;
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .continue-btn:hover { background: #a00000; }
+    .continue-btn:active { transform: scale(0.97); }
+
+    .restart-btn {
+      background: transparent;
+      color: #555;
+      border: 1px solid #2a2a2a;
+      padding: 10px 24px;
+      font-family: 'Special Elite', serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 2px;
+      margin-top: 8px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .restart-btn:hover { color: #888; border-color: #444; }
+
+    /* ── Eyeball ── */
+    .eyeball {
+      font-size: 52px; margin-bottom: 1rem;
+      animation: blink 4s infinite;
+    }
+    @keyframes blink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.05); }
+    }
+
+    /* ── Animations ── */
+    .shake { animation: shake 0.4s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: #1e1e1e; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+
+<div id="horror-app">
+  <div class="blood-drip"></div>
+  <div class="progress-bar" id="progress" style="width: 16%;"></div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 0 — COVER
+  ════════════════════════════════════════════ -->
+  <div class="page active fade-in" id="page-0">
+    <div class="page-counter">01 / 06</div>
+    <div class="eyeball">👁</div>
+    <div class="page-label">a birthday dossier</div>
+    <div class="page-title">Subject: Sarah</div>
+    <div class="content-card" style="max-width: 460px; text-align: center;">
+      <div class="stat-row">
+        <span class="stat-label">Subject Name</span>
+        <span class="stat-val">Naira, age 21</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Subject status</span>
+        <span class="stat-val">Still a menace</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Threat level</span>
+        <span class="stat-val">Dangerous</span>
+      </div>
+      <!-- <div class="stat-row">
+        <span class="stat-label">Classification</span>
+        <span class="stat-val">Happy birthday, little gay boy</span>
+      </div> -->
+    </div>
+    <button class="continue-btn" onclick="nextPage()">Enter the dossier</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 1 — PERSONALITY TRAITS
+  ════════════════════════════════════════════ -->
+  <div class="page fade-in" id="page-1">
+    <div class="page-counter">02 / 06</div>
+    <div class="page-label">Chapter I</div>
+    <div class="page-title">Personality Traits</div>
+    <div class="content-card">
+      <div class="trait-row">
+        <div class="trait-bullet"></div>
+        <div class="trait-text">Randomly Aggressive</div>
+      </div>
+      <div class="trait-row">
+        <div class="trait-bullet"></div>
+        <div class="trait-text">Chronically Suspicious.</div>
+      </div>
+      <div class="trait-row">
+        <div class="trait-bullet"></div>
+        <div class="trait-text">Emotionally in Denial.</div>
+      </div>
+      <div class="trait-row">
+        <div class="trait-bullet"></div>
+        <div class="trait-text">Takes psychic damage from being called "good girl."</div>
+      </div>
+      <div class="trait-row">
+        <div class="trait-bullet"></div>
+        <div class="trait-text">Thinks She's Winning Arguments.</div>
+      </div>
+    </div>
+    <button class="continue-btn" onclick="nextPage()">Continue →</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 2 — SKILLS
+  ════════════════════════════════════════════ -->
+  <div class="page fade-in" id="page-2">
+    <div class="page-counter">03 / 06</div>
+    <div class="page-label">Chapter II</div>
+    <div class="page-title">Skills</div>
+    <div class="content-card">
+      <div class="skill-card">
+        <div class="skill-type">Passive</div>
+        <div class="skill-name">Terminal Defensiveness</div>
+        <div class="skill-desc">Automatically activates whenever a joke lands.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-type">Passive</div>
+        <div class="skill-name">Gay Transformation</div>
+        <div class="skill-desc">suddenly acts gay.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-type">Active</div>
+        <div class="skill-name">Nuh-Uh</div>
+        <div class="skill-desc">Rejects facts.</div>
+        <div class="skill-cooldown">Cooldown: 0 seconds</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-type">Active</div>
+        <div class="skill-name">Emotional Counterattack</div>
+        <div class="skill-desc">Stops losing an argument by creating a new argument.</div>
+      </div>
+      <!-- <div class="skill-card" style="border-left-color: #c0392b;">
+        <div class="skill-type ultimate">Ultimate</div>
+        <div class="skill-name">I'm Not Mad</div>
+        <div class="skill-desc">Damage increases the angrier she gets.</div>
+      </div> -->
+    </div>
+    <button class="continue-btn" onclick="nextPage()">Continue →</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 3 — WEAKNESSES
+  ════════════════════════════════════════════ -->
+  <div class="page fade-in" id="page-3">
+    <div class="page-counter">04 / 06</div>
+    <div class="page-label">Chapter III</div>
+    <div class="page-title">Weaknesses</div>
+    <div class="content-card" style="max-width: 480px;">
+      <div class="weakness-item">
+        <span class="skull">💀</span>
+        <span class="weakness-text">Being called "Good girl."</span>
+      </div>
+      <div class="weakness-item">
+        <span class="skull">💀</span>
+        <span class="weakness-text">resistance to intelligence.</span>
+      </div>
+      <div class="weakness-item">
+        <span class="skull">💀</span>
+        <span class="weakness-text">lacks common sense.</span>
+      </div>
+      <!-- <div class="weakness-item">
+        <span class="skull">💀</span>
+        <span class="weakness-text">Being reminded of something she said five minutes ago.</span>
+      </div>
+      <div class="weakness-item">
+        <span class="skull">💀</span>
+        <span class="weakness-text">Any statement beginning with: "Then explain this."</span>
+      </div> -->
+    </div>
+    <button class="continue-btn" id="weakness-btn" onclick="triggerWeakness()">Say "good girl"</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 4 — SCIENTIFIC OBSERVATIONS
+  ════════════════════════════════════════════ -->
+  <div class="page fade-in" id="page-4">
+    <div class="page-counter">05 / 06</div>
+    <div class="page-label">Chapter IV</div>
+    <div class="page-title">Scientific Observations</div>
+    <div class="content-card">
+      <div class="log-entry">
+        <div class="log-day">Day 127</div>
+        <div class="log-lines">
+          <span>Subject was called "good girl."</span>
+          <span>Immediate hostility observed.</span>
+        </div>
+      </div>
+      <div class="log-entry">
+        <div class="log-day">Day 128</div>
+        <div class="log-lines">
+          <span>Subject claims she was not hostile.</span>
+          <span>Evidence suggests otherwise.</span>
+        </div>
+      </div>
+      <!-- <div class="log-entry">
+        <div class="log-day">Day 215</div>
+        <div class="log-lines">
+          <span>Subject started an argument.</span>
+          <span>Subject later complained about arguments.</span>
+          <span>Researchers are exhausted.</span>
+        </div>
+      </div>
+      <div class="log-entry">
+        <div class="log-day">Day 304</div>
+        <div class="log-lines">
+          <span>Subject found horror content. Mood improved significantly.</span>
+          <span>Researchers finally discovered enrichment activities for the creature.</span>
+        </div>
+      </div> -->
+    </div>
+    <button class="continue-btn" onclick="nextPage()">Continue →</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 5 — CHARACTER LORE
+  ════════════════════════════════════════════ -->
+  <div class="page fade-in" id="page-5">
+    <div class="page-counter">06 / 06</div>
+    <div class="page-label">Chapter V</div>
+    <div class="page-title">Character Lore</div>
+    <div class="content-card" style="max-width: 500px; text-align: center; padding: 2rem;">
+      <div class="lore-text">
+        <span>Nobody knows where she came from.</span>
+        <span>Nobody knows what her plan is.</span>
+        <span>Nobody is convinced she has a plan.</span>
+      </div>
+      <div class="divider"></div>
+      <div class="birthday-banner">happy birthday, little gay boy</div>
+      <div class="final-reveal">from NOIR, with love*</div>
+      <div style="font-size: 11px; color: #333; margin-top: 6px; letter-spacing: 2px;">*love is used loosely here</div>
+    </div>
+    <button class="restart-btn" onclick="restart()">↺ Read again</button>
+  </div>
+
+</div>
+
+<script>
+  let current = 0;
+  const total = 6;
+
+  function nextPage() {
+    const pages = document.querySelectorAll('.page');
+    pages[current].classList.remove('active');
+    current++;
+    if (current < total) {
+      pages[current].classList.add('active', 'fade-in');
+      setTimeout(() => pages[current].classList.remove('fade-in'), 600);
+      window.scrollTo({ top: 0 });
+    }
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function triggerWeakness() {
+    const card = document.querySelector('#page-3 .content-card');
+    card.classList.add('shake');
+    const btn = document.getElementById('weakness-btn');
+    btn.textContent = 'good girl';
+    btn.style.background = '#500';
+    setTimeout(() => {
+      card.classList.remove('shake');
+      btn.textContent = 'Subject took psychic damage. Continue →';
+      btn.style.background = '#8b0000';
+      btn.onclick = nextPage;
+    }, 500);
+  }
+
+  function restart() {
+    const pages = document.querySelectorAll('.page');
+    pages[current].classList.remove('active');
+    current = 0;
+    pages[0].classList.add('active');
+    document.getElementById('progress').style.width = '16%';
+    const weaknessBtn = document.getElementById('weakness-btn');
+    weaknessBtn.textContent = 'Say "good girl"';
+    weaknessBtn.style.background = '#8b0000';
+    weaknessBtn.onclick = triggerWeakness;
+    window.scrollTo({ top: 0 });
+  }
+</script>
+
+</body>
+</html>
